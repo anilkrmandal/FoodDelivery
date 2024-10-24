@@ -5,15 +5,15 @@ export default function Login() {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);  // Start loading
-    setErrorMessage(null);  // Clear any previous error messages
+    setIsLoading(true); // Start loading
+    setErrorMessage(null); // Clear previous error messages
 
     try {
-      const response = await fetch("http://localhost:3000/api/createuser", {
+      const response = await fetch("http://localhost:8000/api/login", { // Updated endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,17 +27,27 @@ export default function Login() {
       const json = await response.json();
       console.log(json);
 
-      if (!json.success) {
-        setErrorMessage("Invalid credentials, please try again.");
+      if (!response.ok) {
+        // Response error handling
+        if (response.status === 401) {
+          setErrorMessage("Invalid credentials. Please check your email and password.");
+        } else if (response.status >= 500) {
+          setErrorMessage("Server error. Please try again later.");
+        } else {
+          setErrorMessage("Unexpected error occurred.");
+        }
       } else {
+        // Successful login
+        localStorage.setItem("authToken", json.authToken);
+        console.log("Auth Token stored: ", localStorage.getItem("authToken")); // This can be removed in production
         navigate("/", { replace: true });
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      console.log("Error during login:", error);
       setErrorMessage("An error occurred. Please try again later.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
-
-    setIsLoading(false);  // Stop loading
   };
 
   const onChange = (event) => {
@@ -87,7 +97,7 @@ export default function Login() {
           <button
             type="submit"
             className="m-3 btn btn-success"
-            disabled={isLoading}  // Disable button during loading
+            disabled={isLoading || !credentials.email || !credentials.password} // Disable button if loading or invalid input
           >
             {isLoading ? 'Submitting...' : 'Submit'}
           </button>

@@ -4,25 +4,20 @@ const mongoURI = 'mongodb+srv://anilmandal70047:mjGy0I8utHybGN92@cluster1.4t1rs.
 
 const mongoDB = async () => {
   try {
-    // Connect to MongoDB (no need for deprecated options)
+    // Try connecting to MongoDB
     await mongoose.connect(mongoURI);
-
     console.log("Connected to MongoDB");
 
+    // Fetch data from the "fooddata" collection
     const fetched_data = await mongoose.connection.db.collection("fooddata").find({}).toArray();
+    const foodCategory = await mongoose.connection.db.collection("foodcategory").find({}).toArray();
 
-    console.log(fetched_data);
-  } catch (error) {
-    console.error("Error connecting to MongoDB:", error);
+    global.food_items = fetched_data;
+    global.foodCategory = foodCategory;
+
+  } catch (err) {
+    console.log("---", err);
   }
 };
 
 module.exports = mongoDB;
-
-
-//Lsc8dxPWN2ZOfeeM
-//anilmandal70047
-//mjGy0I8utHybGN92
-
-//mongodb+srv://anilmandal70047:mjGy0I8utHybGN92@cluster1.4t1rs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1
-//mongoimport --uri "mongodb+srv://anilmandal70047:mjGy0I8utHybGN92@cluster0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1" --collection gofoodmern --type json --file "C:/Users/anil/Downloads/foodData2.json" --jsonArray
